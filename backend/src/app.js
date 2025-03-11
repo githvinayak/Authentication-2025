@@ -6,11 +6,11 @@ import { config } from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-//import { dbConnection } from "./db/connect.js";
+import { dbConnection } from "./db/connect.js";
 
-// config({
-//   path: "./.env",
-// });
+config({
+  path: "./.env",
+});
 
 const Limiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
@@ -20,8 +20,8 @@ const Limiter = rateLimit({
   
 //db connect
 const port = process.env.PORT || 5000;
-// const mongoURI = process.env.DATABASE_URL || "";
-// dbConnection(mongoURI);
+const mongoURI = process.env.DATABASE_URL || "";
+dbConnection(mongoURI);
 //creating instance of cache
 const app = express();
 app.use(express.json());
