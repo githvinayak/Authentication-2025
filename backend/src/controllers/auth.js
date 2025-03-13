@@ -80,3 +80,19 @@ export const login = TryCatch(async (req, res, next) => {
   });
   res.json({ message: "Login Successfully", accessToken });
 });
+
+export const forgotPassword = TryCatch(async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) return next(new ErrorHandler("Email is required", 400));
+
+  const user = await User.findOne({ email });
+  if (!user) return next(new ErrorHandler("User not found", 404));
+
+  const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "15m",
+  });
+  const resetUrl = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
+  await sendEmail(user.email, "Reset Your Password", `Click here: ${resetUrl}`);
+
+  res.json({ message: "Password reset link sent!" });
+});
