@@ -46,3 +46,37 @@ export const verifyEmail = TryCatch(async (req, res, next) => {
 
   res.json({ message: "Email verified. You can log in now." });
 });
+
+export const login = TryCatch(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return next(new ErrorHandler("Email and password required", 400));
+
+  const user = await User.findOne({ email });
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return next(new ErrorHandler("Invalid credentials", 400));
+  }
+  if (!user.isVerified)
+    return next(new ErrorHandler("Email not verified", 403));
+
+  const accessToken = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "15m" }
+  );
+  const refreshToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
+  });
+  res.json({ message: "Login Successfully", accessToken });
+});
