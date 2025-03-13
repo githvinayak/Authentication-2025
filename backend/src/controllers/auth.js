@@ -96,3 +96,22 @@ export const forgotPassword = TryCatch(async (req, res, next) => {
 
   res.json({ message: "Password reset link sent!" });
 });
+
+export const resetPassword = TryCatch(async (req, res, next) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword)
+    return next(new ErrorHandler("Token and new password required", 400));
+  const decoded = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return next(new ErrorHandler("Invalid or expired token", 400));
+    }
+    return decoded;
+  });
+  const user = await User.findById(decoded.id);
+  if (!user) return next(new ErrorHandler("User not found", 404));
+
+  user.password = newPassword;
+  await user.save();
+
+  res.json({ message: "Password reset successful" });
+});
