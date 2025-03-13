@@ -29,3 +29,20 @@ export const register = TryCatch(async (req, res, next) => {
   });
 });
 
+export const verifyEmail = TryCatch(async (req, res, next) => {
+  const { token } = req.params;
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return next(new ErrorHandler("Invalid or expired token", 400));
+    }
+    return decoded;
+  });
+  const user = await User.findById(decoded.id);
+  if (!user) return next(new ErrorHandler("User not found", 404));
+
+  user.isVerified = true;
+  await user.save();
+
+  res.json({ message: "Email verified. You can log in now." });
+});
