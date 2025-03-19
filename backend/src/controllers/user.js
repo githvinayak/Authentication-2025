@@ -31,10 +31,10 @@ export const getProfile = TryCatch(async (req, res, next) => {
     res.status(200).json(user);
   });
 // Get User Role
-export const getUserRole = async (req, res) => {
+export const getUserRole = TryCatch(async (req, res) => {
   const user = await User.findById(req.user.id);
   res.json({ role: user.role });
-};
+});
 
 export const deleteAccount = TryCatch(async (req, res, next) => {
   await User.findByIdAndDelete(req.user.id);
