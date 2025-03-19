@@ -24,3 +24,21 @@ export const updatePassword = TryCatch(async (req, res) => {
   res.json({ message: "Password updated" });
 });
 
+export const getProfile = TryCatch(async (req, res, next) => {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return next(new ErrorHandler("User not found", 404));
+  
+    res.status(200).json(user);
+  });
+// Get User Role
+export const getUserRole = async (req, res) => {
+  const user = await User.findById(req.user.id);
+  res.json({ role: user.role });
+};
+
+export const deleteAccount = TryCatch(async (req, res, next) => {
+  await User.findByIdAndDelete(req.user.id);
+  res.clearCookie("refreshToken");
+  res.status(200).json({ message: "Account deleted" });
+});
+
