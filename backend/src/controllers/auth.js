@@ -145,3 +145,42 @@ export const logout = TryCatch(async (req, res) => {
   res.json({ message: "Logged out successfully" });
 });
 
+export const logoutAll = TryCatch(async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken)
+      return next(new ErrorHandler("No refresh token provided", 401));
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    await redisClient.set(decoded.id, "blacklisted", "EX", 7 * 24 * 60 * 60); // Blacklist for 7 days
+
+    res.clearCookie("refreshToken");
+    res
+      .status(200)
+      .json({ message: "Logged out from all devices successfully" });
+  } catch (error) {
+    next(new ErrorHandler("Logout failed", 500));
+  }
+});
+
+export const oauthCallback = TryCatch(async (req, res, next) => {
+  const user = req.user;
+
+  if (!user) return next(new ErrorHandler("OAuth login failed", 400));
+
+  const accessToken = generateToken(user._id, process.env.JWT_SECRET, "15m");
+  const refreshToken = generateToken(
+    user._id,
+    process.env.JWT_REFRESH_SECRET,
+    "7d"
+  );
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
+  });
+
+  res.status(200).json({ accessToken });
+});
+
