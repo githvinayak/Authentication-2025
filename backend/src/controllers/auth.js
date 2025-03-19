@@ -115,3 +115,33 @@ export const resetPassword = TryCatch(async (req, res, next) => {
 
   res.json({ message: "Password reset successful" });
 });
+
+export const refreshToken = TryCatch(async (req, res, next) => {
+  const { refreshToken } = req.cookies;
+  if (!refreshToken) return next(new ErrorHandler("No refresh token", 401));
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    // Check if refresh token is blacklisted in Redis
+    const isBlacklisted = await redisClient.get(decoded.id);
+    if (isBlacklisted)
+      return next(new ErrorHandler("Refresh token invalid", 403));
+
+    const newAccessToken = jwt.sign(
+      { id: decoded.id },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch (error) {
+    next(new ErrorHandler("Invalid refresh token", 403));
+  }
+});
+
+export const logout = TryCatch(async (req, res) => {
+  res.clearCookie("refreshToken");
+  res.json({ message: "Logged out successfully" });
+});
+
