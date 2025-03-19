@@ -184,3 +184,31 @@ export const oauthCallback = TryCatch(async (req, res, next) => {
   res.status(200).json({ accessToken });
 });
 
+export const enable2FA = TryCatch(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  if (!user) return next(new ErrorHandler("User not found", 404));
+
+  const secret = speakeasy.generateSecret({ length: 20 });
+
+  user.twoFactorSecret = secret.base32;
+  user.twoFactorEnabled = true;
+  await user.save();
+
+  const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+  res.json({ message: "2FA enabled", qrCodeUrl });
+});
+
+export const disable2FA = TryCatch(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(new ErrorHandler("User not found", 404));
+  }
+
+  user.twoFactorEnabled = false;
+  user.twoFactorSecret = null;
+  await user.save();
+
+  res.status(200).json({ message: "Two-Factor Authentication disabled" });
+});
+
