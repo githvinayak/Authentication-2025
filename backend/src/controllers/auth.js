@@ -212,3 +212,42 @@ export const disable2FA = TryCatch(async (req, res, next) => {
   res.status(200).json({ message: "Two-Factor Authentication disabled" });
 });
 
+export const verify2FA = TryCatch(async (req, res, next) => {
+  const { token } = req.body;
+  const user = await User.findById(req.user.id);
+  if (!user || !user.twoFASecret)
+    return next(new ErrorHandler("2FA not enabled", 400));
+
+  const verified = speakeasy.totp.verify({
+    secret: user.twoFactorSecret,
+    encoding: "base32",
+    token,
+    window: 1,
+  });
+
+  if (!verified) return next(new ErrorHandler("Invalid 2FA token", 401));
+
+  res.status(200).json({ message: "2FA verified" });
+});
+
+export const verifyLogin2FA = TryCatch(async (req, res) => {
+  const { email, password, otp } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(400).json({ error: "Invalid credentials" });
+  }
+
+  if (user.twoFactorEnabled) {
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: "base32",
+      token: otp,
+      window: 1,
+    });
+
+    if (!verified) return res.status(400).json({ error: "Invalid OTP" });
+  }
+
+  res.json({ message: "2FA login successful" });
+});
