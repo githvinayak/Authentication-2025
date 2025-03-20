@@ -12,6 +12,9 @@ router.put("/password", isAuthenticated, updatePassword);
 router.delete("/delete-account", isAuthenticated, deleteAccount);
 router.get("/role", isAuthenticated, getUserRole);
 
-
+// 🛑 Role-Based Access (Admin Only)
+router.get("/users", isAuthenticated, isAdmin, getAllUsers);
+router.get("/users/:id", isAuthenticated, isAdmin, getUserById);
+router.delete("/users/:id", isAuthenticated, isAdmin, deleteUserById);
 
 module.exports = router;
