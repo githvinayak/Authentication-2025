@@ -15,6 +15,12 @@ app.post("/login", login);
 app.post("/logout", isAuthenticated, logout);
 app.post("/logout-all", isAuthenticated, logoutAll);
 
+// 🔄 Token Refresh
+app.post("/refresh-token", refreshToken);
+
+// 🔒 Forgot & Reset Password
+app.post("/forgot-password", forgotPassword);
+app.post("/reset-password", resetPassword);
 
 
 
