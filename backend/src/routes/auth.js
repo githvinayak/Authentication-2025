@@ -28,7 +28,13 @@ app.post("/2fa/verify", isAuthenticated, verify2FA);
 app.post("/2fa/disable", isAuthenticated, disable2FA);
 app.post("/2fa/login", verifyLogin2FA);
 
+// 🌍 OAuth (Google/GitHub Login)
+app.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+app.get("/google/callback", passport.authenticate("google", { session: false }), oauthCallback);
 
+// GitHub OAuth
+app.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
+app.get("/github/callback", passport.authenticate("github", { session: false }), oauthCallback);
 
 
 export default app;
