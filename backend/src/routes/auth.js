@@ -22,6 +22,13 @@ app.post("/refresh-token", refreshToken);
 app.post("/forgot-password", forgotPassword);
 app.post("/reset-password", resetPassword);
 
+// 🔐 Two-Factor Authentication (2FA);
+app.post("/2fa/enable", isAuthenticated, enable2FA);
+app.post("/2fa/verify", isAuthenticated, verify2FA);
+app.post("/2fa/disable", isAuthenticated, disable2FA);
+app.post("/2fa/login", verifyLogin2FA);
+
+
 
 
 export default app;
