@@ -10,6 +10,11 @@ const app = express.Router();
 app.post("/register", register);
 app.get("/verify-email/:token", verifyEmail);
 
+// 🔑 Authentication (Login / Logout)
+app.post("/login", login);
+app.post("/logout", isAuthenticated, logout);
+app.post("/logout-all", isAuthenticated, logoutAll);
+
 
 
 
