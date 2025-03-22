@@ -1,4 +1,5 @@
-import { TryCatch } from "../middlewares/error";
+import { TryCatch } from "../middlewares/error.js";
+import { User } from "../models/user.js";
 
 export const updateProfile = TryCatch(async (req, res) => {
   const { name, email } = req.body;
@@ -42,3 +43,9 @@ export const deleteAccount = TryCatch(async (req, res, next) => {
   res.status(200).json({ message: "Account deleted" });
 });
 
+
+
+// `select * from (select v12 as opening , (select sum(v8) from tran2 as t1  where t1.mastercode1=master1.code and  ( t1.t3 not like  'PDC'  or t1.t3 is null ) and t1.dated <  #2025-03-19#    and Vchtype not in (12,13,27,26,31,36 ,11,4,5 )   group by  t1.mastercode1) as bal,code,parentgrp,(SELECT name FROM master1 as m WHERE m.code =master1.code) as Account,(SELECT name FROM master1 as m WHERE m.code = master1.parentgrp) as parentgrpname  from master1  where mastertype=2   and parentgrp not in (122,123,124,126,125,127,115,108,-1) 
+// union all select v12 as opening , (select sum(v8) from tran2 as t1  where t1.mastercode1=master1.code and  ( t1.t3 not like  'PDC'  or t1.t3 is null ) and t1.dated >  #24-04-01#  and t1.dated <  #2025-03-19#    and Vchtype not in (12,13,27,26,31,36 ,11,4,5 )   group by  t1.mastercode1) as bal,code,parentgrp,(SELECT name FROM master1 as m WHERE m.code =master1.code) as Account,(SELECT name FROM master1 as m WHERE m.code = master1.parentgrp) as parentgrpname   from master1  where mastertype=2   and parentgrp  in (122,123,124,126,125,127,-1) 
+// union all select v12 as opening , (select sum(v8) from tran2 as t1  where t1.mastercode1=master1.code and  ( t1.t3 not like  'PDC'  or t1.t3 is null ) and t1.dated >  #24-04-01#  and t1.dated <  #2025-03-19#    and Vchtype not in (12,13,27,26,31,36 ,11,4,5 )   group by  t1.mastercode1) as bal,code,parentgrp,(SELECT name FROM master1 as m WHERE m.code =master1.code) as Account,(SELECT name FROM master1 as m WHERE m.code = master1.parentgrp) as parentgrpname   from master1  where mastertype=2   and parentgrp  in (108,-1) 
+// union all select    v12 as opening  ,(select top 1 amount from ClosingStockValuenew  where   dated <  #2025-03-19#     and mastercode=master1.code  order by dated desc) as bal,code,parentgrp,(SELECT name FROM master1 as m WHERE m.code =master1.code) as Account,(SELECT name FROM master1 as m WHERE m.code = master1.parentgrp) as parentgrpname   from master1  where mastertype=2   and parentgrp  in (115,-1)  ) as v`
