@@ -4,6 +4,8 @@ import { sendEmail } from "../utils/sendEmail.js";
 import { User } from "../models/user.js";
 import ErrorHandler, { TryCatch } from "../middlewares/error.js";
 import { redisClient } from "../config/redis.js";
+import speakeasy from "speakeasy";
+import QRCode from "qrcode";
 
 export const register = TryCatch(async (req, res, next) => {
   const { name, email, password } = req.body;
