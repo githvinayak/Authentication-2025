@@ -45,3 +45,6 @@ export const TryCatch = (func) => (req, res, next) => {
   };
   
   export default ErrorHandler;
+
+  //DATABASE_URL = "mongodb+srv://surunderkumar192002:PdezTW4Aj06YRrIG@authapp-2025.jegcl.mongodb.net/"
+  //"mongodb+srv://surunderkumar192002:PdezTW4Aj06YRrIG@authapp-2025.jegcl.mongodb.net/?retryWrites=true&w=majority&appName=AuthApp-2025"
