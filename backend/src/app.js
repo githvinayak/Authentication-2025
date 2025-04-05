@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import { dbConnection } from "./db/connect.js";
 import authRoute from "./routes/auth.js"
 import userRoute from "./routes/user.js"
+import { redisClient } from "./config/redis.js";
 
 
 config({
@@ -19,7 +20,7 @@ config({
 
 const Limiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
-    max: 5, // Max 5 requests per 10 minutes for authentication routes
+    max: 20, // Max 5 requests per 10 minutes for authentication routes
     message: "Too many attempts, please try again later.",
   });
   
@@ -56,11 +57,12 @@ app.use("/api/v1/user", Limiter);
 app.get("/", (req, res) => {
   res.send("Api is working with /api/v1");
 });
+
 //using routes
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/user", userRoute);
 
-app.use(errorMiddleware);
+app.use(errorMiddleware);6
 app.listen(port, () => {
   console.log("server is literning on http://localhost:" + port);
 });
