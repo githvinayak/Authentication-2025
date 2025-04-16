@@ -22,7 +22,7 @@ export const register = TryCatch(async (req, res, next) => {
   await sendEmail(
     email,
     "Verify Email",
-    `${process.env.CLIENT_URL}/verify/${verificationToken}`
+    `${process.env.CLIENT_URL}/verify-email/${verificationToken}`
   );
 
   res.status(201).json({
@@ -112,6 +112,7 @@ export const login = TryCatch(async (req, res, next) => {
   res.status(200).json({
     message: "Login successful",
     accessToken,
+    twoFactorEnabled: user.twoFactorEnabled,
   });
 });
 
@@ -334,4 +335,14 @@ export const verifyLogin2FA = TryCatch(async (req, res, next) => {
   });
 
   res.status(200).json({ message: "2FA login successful", accessToken });
+});
+
+export const verifyPassword = TryCatch(async (req, res, next) => {
+  const { password } = req.body;
+  const user = await User.findById(req.user.id);
+
+  if (!(await bcrypt.compare(password, user.password))) {
+    return res.status(400).json({ error: "Incorrect current password" });
+  }
+  res.status(200).json({ success: true });
 });
