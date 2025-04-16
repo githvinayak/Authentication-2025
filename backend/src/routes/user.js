@@ -6,9 +6,9 @@ import { deleteAccount, getProfile, getUserRole, updatePassword, updateProfile }
 const app = express.Router();
 
 // 👤 Profile & Settings
-app.get("/profile", isAuthenticated, getProfile);
-app.put("/profile", isAuthenticated, updateProfile);
-app.put("/password", isAuthenticated, updatePassword);
+app.get("/get-profile", isAuthenticated, getProfile);
+app.put("/update-profile", isAuthenticated, updateProfile);
+app.put("/update-password", isAuthenticated, updatePassword);
 app.delete("/delete-account", isAuthenticated, deleteAccount);
 app.get("/role", isAuthenticated, getUserRole);
 
