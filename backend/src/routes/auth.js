@@ -27,6 +27,7 @@ app.post("/2fa/enable", isAuthenticated, enable2FA);
 app.post("/2fa/verify", isAuthenticated, verify2FA);
 app.post("/2fa/disable", isAuthenticated, disable2FA);
 app.post("/2fa/login", verifyLogin2FA);
+app.post("verify-password")
 
 // 🌍 OAuth (Google/GitHub Login)
 app.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
