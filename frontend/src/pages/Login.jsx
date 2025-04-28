@@ -7,9 +7,24 @@ import { FaGithub } from "react-icons/fa";
 import auth from "../assets/password.png";
 import { Link } from "react-router-dom";
 import AuthLayout from "@/components/AuthLayout";
+import { useLogin } from "@/hooks/auth/useLogin";
 
 const Login = () => {
+  const { mutate: login, isPending } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    login(form);
+  };
 
   return (
     <AuthLayout>
@@ -25,11 +40,18 @@ const Login = () => {
           </div>
 
           {/* Login Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
               <label className="block mb-1 text-sm font-medium">Email</label>
-              <Input type="email" placeholder="john.doe@example.com" required />
+              <Input
+                name="email"
+                type="email"
+                placeholder="john@example.com"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             {/* Password with toggle */}
@@ -37,9 +59,12 @@ const Login = () => {
               <label className="block mb-1 text-sm font-medium">Password</label>
               <div className="relative">
                 <Input
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="******"
                   className="pr-10"
+                  value={form.password}
+                  onChange={handleChange}
                   required
                 />
                 <button
@@ -63,8 +88,8 @@ const Login = () => {
             </div>
 
             {/* Submit */}
-            <Button type="submit" className="w-full bg-black hover:bg-gray-900">
-              Login
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Logging in..." : "Login"}
             </Button>
           </form>
 
