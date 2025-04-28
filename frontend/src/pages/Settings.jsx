@@ -1,134 +1,157 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Eye, EyeOff, Settings as SettingsIcon } from "lucide-react";
-import AuthLayout from "@/components/AuthLayout";
 
-const Settings = () => {
-  const [name, setName] = useState("Antonio");
-  const [email, setEmail] = useState("hedhogs@gmail.com");
-  const [role, setRole] = useState("User");
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import { toast } from "sonner"
+import Enable2FAModal from "@/components/modals/Enable2FAModal"
+import Disable2FAModal from "@/components/modals/Disable2FAModal"
+import { useGetProfile } from "@/hooks/user/useGetProfile"
+import { useUpdateProfile } from "@/hooks/user/useUpdateProfile"
+import { useUpdatePassword } from "@/hooks/user/useUpdatePassword"
+import { useLogoutAll } from "@/hooks/auth/useLogoutAll"
+import { useDeleteAccount } from "@/hooks/user/useDeleteAccount"
+import { useEnable2FA } from "@/hooks/auth/useEnable2FA"
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
+const Settings=()=>{
+  const { data: user } = useGetProfile()
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
 
-  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [twoFAPassword, setTwoFAPassword] = useState("")
+  const [isEnabling2FA, setIsEnabling2FA] = useState(true)
+  const [showEnable2FAModal, setShowEnable2FAModal] = useState(false)
+  const [showDisable2FAModal, setShowDisable2FAModal] = useState(false)
 
-  const handleSave = (e) => {
-    e.preventDefault();
+  const updateProfile = useUpdateProfile()
+  const updatePassword = useUpdatePassword()
+  const logoutAll = useLogoutAll()
+  const deleteAccount = useDeleteAccount()
+  const enable2FA = useEnable2FA()
 
-    // TODO: Call API to update profile, password & 2FA toggle
-    console.log({
-      name,
-      email,
-      currentPassword,
-      newPassword,
-      twoFAEnabled,
-    });
-  };
+  useEffect(() => {
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+    }
+  }, [user])
+
+  const handleProfileUpdate = () => {
+    updateProfile.mutate({ name, email })
+  }
+
+  const handleToggle2FA = () => {
+    setIsEnabling2FA(!user.twoFactorEnabled)
+    setShowPasswordModal(true)
+  }
+
+  const handleConfirm2FAPassword = () => {
+    if (!twoFAPassword) return
+
+    if (isEnabling2FA) {
+      enable2FA.mutate(
+        { password: twoFAPassword },
+        {
+          onSuccess: () => {
+            setShowPasswordModal(false)
+            setShowEnable2FAModal(true)
+            setTwoFAPassword("")
+          },
+          onError: (err) => {
+            toast.error(err.response?.data?.message || "Failed to enable 2FA")
+          },
+        }
+      )
+    } else {
+      setShowPasswordModal(false)
+      setShowDisable2FAModal(true)
+      setTwoFAPassword("")
+    }
+  }
 
   return (
-    <AuthLayout>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md bg-white p-6 rounded-lg shadow space-y-6">
-          {/* Header */}
-          <div className="flex justify-center items-center text-3xl font-bold">
-            <SettingsIcon className="text-gray-500 mr-2" />
-            <h1>Settings</h1>
-          </div>
+    <div className="max-w-xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Settings</h1>
 
-          <form onSubmit={handleSave} className="space-y-4">
-            {/* Name */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Name</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-
-            {/* Email */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Email</label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            {/* Current Password */}
-            <div className="space-y-1 relative">
-              <label className="text-sm font-medium text-gray-700">
-                Current password
-              </label>
-              <Input
-                type={showCurrentPassword ? "text" : "password"}
-                placeholder="********"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-              <span
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-[38px] text-gray-600 cursor-pointer"
-              >
-                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </span>
-            </div>
-
-            {/* New Password */}
-            <div className="space-y-1 relative">
-              <label className="text-sm font-medium text-gray-700">
-                New password
-              </label>
-              <Input
-                type={showNewPassword ? "text" : "password"}
-                placeholder="********"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              <span
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-[38px] text-gray-600 cursor-pointer"
-              >
-                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </span>
-            </div>
-
-            {/* Role (read-only) */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Role</label>
-              <Input
-                value={role}
-                readOnly
-                className="bg-gray-100 cursor-not-allowed"
-              />
-            </div>
-
-            {/* Two-Factor Authentication */}
-            <div className="flex items-center justify-between pt-2 border-t">
-              <div>
-                <p className="font-medium text-sm">Two Factor Authentication</p>
-                <p className="text-sm text-gray-500">
-                  Enable two factor authentication for your account
-                </p>
-              </div>
-              <Switch
-                checked={twoFAEnabled}
-                onCheckedChange={setTwoFAEnabled}
-                className="ml-4"
-              />
-            </div>
-
-            {/* Save Button */}
-            <Button type="submit" className="w-full mt-4">
-              Save
-            </Button>
-          </form>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium">Name</label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
+        <div>
+          <label className="block text-sm font-medium">Email</label>
+          <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+        <Button onClick={handleProfileUpdate}>Update Profile</Button>
       </div>
-    </AuthLayout>
-  );
-};
 
-export default Settings;
+      <div className="flex items-center justify-between mt-6">
+        <span className="text-sm font-medium">Two-Factor Authentication</span>
+        <Switch
+          checked={user?.twoFactorEnabled}
+          onCheckedChange={handleToggle2FA}
+        />
+      </div>
+
+      <div className="mt-6 space-x-4">
+        <Button variant="destructive" onClick={() => logoutAll.mutate()}>
+          Logout from all devices
+        </Button>
+        <Button variant="destructive" onClick={() => deleteAccount.mutate()}>
+          Delete Account
+        </Button>
+      </div>
+
+      {/* Password Confirmation Modal */}
+      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Confirm to {isEnabling2FA ? "Enable" : "Disable"} 2FA
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 mb-2">
+            Please enter your password to continue:
+          </p>
+          <Input
+            type="password"
+            placeholder="Your password"
+            value={twoFAPassword}
+            onChange={(e) => setTwoFAPassword(e.target.value)}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPasswordModal(false)
+                setTwoFAPassword("")
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirm2FAPassword}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Enable2FAModal
+        open={showEnable2FAModal}
+        onClose={() => setShowEnable2FAModal(false)}
+      />
+      <Disable2FAModal
+        open={showDisable2FAModal}
+        onClose={() => setShowDisable2FAModal(false)}
+      />
+    </div>
+  )
+}
+
+export default Settings
