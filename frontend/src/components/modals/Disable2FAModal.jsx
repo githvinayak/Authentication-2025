@@ -57,3 +57,5 @@ const Disable2FAModal = ({ open, onClose }) => {
 }
 
 export default Disable2FAModal
+
+
